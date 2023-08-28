@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 )
 
 type Configuration struct {
@@ -29,6 +31,14 @@ Target directory: %s`, c.ProjectName, c.ProjectTarget)
 }
 
 func LoadConfigurationFromFile(filePath string) (*Configuration, error) {
+    filePathStat, err := os.Stat(filePath)
+
+    if err != nil {
+        return nil, err
+    } else if filePathStat.IsDir() {
+        filePath = path.Join(filePath, "jproj.json")
+    }
+
     fileContent, err := ioutil.ReadFile(filePath)
 
     if err != nil {

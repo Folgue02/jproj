@@ -5,7 +5,7 @@ import (
 )
 
 func help(args []string) {
-    fmt.Println("Help message")
+    fmt.Println("Help message (TODO)")
 }
 
 

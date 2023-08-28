@@ -16,8 +16,10 @@ func InitializeCommands() {
         "help": Command { help, "Displays a help message" },
         "listactions": Command { listactions, "Lists all possible actions" },
         "createproject": Command { createproject, "Creates a new project." },
-        "listproj": Command { listproject, "Displays the information about the project." },
+        "listproject": Command { listproject, "Displays the information about the project." },
         "build": Command { buildProject, "Builds/Compiles the current project." },
+        "clean": Command { clean, "Cleans/Removes the compiled sources of the project." },
+        "new": Command { newElement, "Adds/Creates a new element to the project." },
     }
 }
 

@@ -64,7 +64,10 @@ func createproject(args []string) {
 func setupProject(projectName string, directory string) (*string, *os.File, error) {
     projectPath := path.Join(directory, projectName)
     projectConfigurationPath := path.Join(projectPath, "jproj.json")
-    err := os.Mkdir(projectPath, 0750)
+    // TODO: Control errors from the other creations
+    err := os.Mkdir(projectPath, 0750) // rwxr-x---
+    os.Mkdir(path.Join(projectPath, "src"), 0750)
+    os.Mkdir(path.Join(projectPath, "target"), 0750)
 
     if err != nil {
         return nil, nil, fmt.Errorf("Error: Cannot create directory '%s' due to the following error: %s\n", projectName, err)
