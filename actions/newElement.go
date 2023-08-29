@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -17,7 +17,7 @@ const (
     ElementTypeEnum = "enum"
 )
 
-func newElement(args []string) {
+func newElement(args []string) error {
     parser := argparse.NewParser("new", "Add elements to the project.")    
     projectDirectory := parser.String(
         "d",
@@ -34,8 +34,7 @@ func newElement(args []string) {
     err := parser.Parse(args)
 
     if err != nil {
-        log.Printf("Error: Wrong arguments: %v\n", err)
-        return
+        return fmt.Errorf("Error: Wrong arguments: %v", err)
     }
     
     jpp := utils.NewJavaPackagePath(*elementName)
@@ -45,18 +44,16 @@ func newElement(args []string) {
         err := os.MkdirAll(path.Join(*projectDirectory, "src", jpp.ToJavaDirPath()), 0750)
 
         if err != nil {
-            log.Printf("Error: Cannot create package due to the following error: %v\n", err)
-            return
+            return fmt.Errorf("Error: Cannot create package due to the following error: %v", err)
         }
-        return
+        return nil
     }
 
     // Create java source file (class, interface or enum)
     fileContent, ok := templates.GenerateTemplate(*elementType, jpp.Base(), jpp.DirPackagePath())
 
     if !ok {
-        log.Printf("Error: '%s' is not identified as en element type.\n", *elementType)
-        return
+        return fmt.Errorf("Error: '%s' is not identified as en element type.", *elementType)
     } 
 
     javaFilePath := path.Join(*projectDirectory, "src", jpp.ToJavaFilePath())
@@ -65,16 +62,16 @@ func newElement(args []string) {
     err = os.MkdirAll(javaFilePathDir, 0750)
 
     if err != nil {
-        log.Printf("Error: Cannot create the file's base path ('%s') due to the following error: %v\n", javaFilePathDir, err)
-        return
+        return fmt.Errorf("Error: Cannot create the file's base path ('%s') due to the following error: %v", javaFilePathDir, err)
     }
 
-    err = ioutil.WriteFile(javaFilePath, []byte(*fileContent), 0750)
+    err = os.WriteFile(javaFilePath, []byte(*fileContent), 0750)
     
     if err != nil {
-        log.Printf("Error: Cannot write to file '%s' due to the following error: %v\n", javaFilePath, err)
+        return fmt.Errorf("Error: Cannot write to file '%s' due to the following error: %v", javaFilePath, err)
     } else {
         log.Println("Done.")
+        return nil
     }
 }
 

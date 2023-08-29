@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/folgue02/jproj/configuration"
 )
 
-func listproject(args []string) {
+func listproject(args []string) error{
     parser := argparse.NewParser("listproject", "Displays the information about the project")
     projectDirectory := parser.String(
         "d", 
@@ -23,25 +22,24 @@ func listproject(args []string) {
 
     if err != nil {
         if os.IsNotExist(err) {
-            log.Printf("The project's directory specified doesn't exist. ('%s')\n", *projectDirectory)
+            return fmt.Errorf("The project's directory specified doesn't exist. ('%s')", *projectDirectory)
         } else {
-            log.Printf("Cannot stat the project's directory ('%s')\n", *projectDirectory)
+            return fmt.Errorf("Cannot stat the project's directory ('%s')", *projectDirectory)
         }
-        return
     }
 
     if !stat.IsDir() {
-        log.Printf("The project directory specified ('%s') is not a directory.\n", *projectDirectory)
-        return
+        return fmt.Errorf("The project directory specified ('%s') is not a directory.", *projectDirectory)
     }
 
     config, err := configuration.LoadConfigurationFromFile(path.Join(*projectDirectory, "jproj.json"))
 
     if err != nil {
-        log.Printf("Error: Cannot load the project's configuration due to the following error: %v\n", err)
-        return
+        return fmt.Errorf("Error: Cannot load the project's configuration due to the following error: %v", err)
     } else {
         fmt.Println(config)
     }
+
+    return nil
 }
 

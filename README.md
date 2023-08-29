@@ -40,4 +40,4 @@ $ jproj clean
 ```sh
 $ make build
 ```
-The binary is located at `./bin/jproj`
+The binary is located at `./bin/jproj`.

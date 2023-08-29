@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -11,48 +12,44 @@ import (
 	"github.com/folgue02/jproj/utils"
 )
 
-func buildProject(args []string) {
+func buildProject(args []string) error {
     parser := argparse.NewParser("build", "Builds/Compiles the current project")
     projectDirectory := parser.String(
         "d",
         "directory", 
         &argparse.Options { Required: false, Default: ".", Help: "Specifies the project's directory" })
-    parser.Parse(args)
+    if err := parser.Parse(args); err != nil {
+        return fmt.Errorf("Error: Something wrong with the arguments: %v", err)
+    }
 
     projectDirectoryStat, err := os.Stat(*projectDirectory)
 
     if err != nil {
-        log.Printf("Error: Cannot stat project's directory due to the following error: %v\n", err)
-        return
-    } 
-
-    if !projectDirectoryStat.IsDir() {
-        log.Printf("Error: The path to the project's directory specified ('%s') doesn't point to a directory.\n", *projectDirectory)
-        return
+        return fmt.Errorf("Error: Cannot stat project's directory due to the following error: %v", err)
+    } else if !projectDirectoryStat.IsDir() {
+        return fmt.Errorf("Error: The path to the project's directory specified ('%s') doesn't point to a directory.", *projectDirectory)
     }
 
     javaFiles, err := utils.GrepFilesByExtension(path.Join(*projectDirectory, "src"), "java", utils.GrepFiles)
 
     if err != nil {
-        log.Printf("Error: Cannot find java source files due to the following error: %v\n", err)
-        return
+        return fmt.Errorf("Error: Cannot find java source files due to the following error: %v", err)
     } else if len(javaFiles) == 0 {
-        log.Printf("Error: No java source files found in the './src' directory.\n")
-        return
+        return fmt.Errorf("Error: No java source files found in the './src' directory.")
     }
     projectConfiguration, err := configuration.LoadConfigurationFromFile(path.Join(*projectDirectory, "jproj.json"))
     if err != nil {
-        log.Printf("Cannot load project's configuration due to the following error: %v\n", err)
-        return
+        return fmt.Errorf("Cannot load project's configuration due to the following error: %v", err)
     }
 
     // Build
     err = buildSources(*projectDirectory, javaFiles, *projectConfiguration)
 
     if err != nil {
-        log.Printf("Error: Error while compiling with 'javac': %v\n", err)
+        return fmt.Errorf("Error: Error while compiling with 'javac': %v", err)
     } else {
         log.Println("Done.")
+        return nil
     }
 }
 

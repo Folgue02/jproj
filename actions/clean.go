@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path"
 
@@ -9,7 +9,7 @@ import (
 	"github.com/folgue02/jproj/configuration"
 )
 
-func clean(args []string) {
+func clean(args []string) error {
     parser := argparse.NewParser("clean", "Cleans/Remove generated files.")    
     projectDirectory := parser.String(
         "d",
@@ -24,8 +24,7 @@ func clean(args []string) {
     entries, err := os.ReadDir(targetPath)
 
     if err != nil {
-        log.Printf("Error: Cannot clean the target directory due to the following error: %v\n", err)
-        return
+        return fmt.Errorf("Error: Cannot clean the target directory due to the following error: %v\n", err)
     }
 
     for _, entry := range entries {
@@ -34,8 +33,8 @@ func clean(args []string) {
         err := os.RemoveAll(entryPath)
 
         if err != nil {
-            log.Printf("Error: Cannot remove file/dir while cleaning the target directory: %v\n", err)
-            return
+            return fmt.Errorf("Error: Cannot remove file/dir while cleaning the target directory: %v\n", err)
         }
     }
+    return nil
 }

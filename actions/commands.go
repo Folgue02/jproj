@@ -5,7 +5,7 @@ import (
 )
 
 type Command struct {
-    ActionFunction func([]string)
+    ActionFunction func([]string) error
     HelpMsg string
 }
 
@@ -13,13 +13,14 @@ var Commands *map[string]Command
 
 func InitializeCommands() {
     Commands = &map[string]Command {
-        "help": Command { help, "Displays a help message" },
-        "listactions": Command { listactions, "Lists all possible actions" },
-        "createproject": Command { createproject, "Creates a new project." },
-        "listproject": Command { listproject, "Displays the information about the project." },
-        "build": Command { buildProject, "Builds/Compiles the current project." },
-        "clean": Command { clean, "Cleans/Removes the compiled sources of the project." },
-        "new": Command { newElement, "Adds/Creates a new element to the project." },
+        "help": { listactions, "Lists all possible actions" },
+        "createproject": { createproject, "Creates a new project." },
+        "listproject": { listproject, "Displays the information about the project." },
+        "build": { buildProject, "Builds/Compiles the current project." },
+        "clean": { clean, "Cleans/Removes the compiled sources of the project." },
+        "new": { newElement, "Adds/Creates a new element to the project." },
+        "run": { runProject, "Runs the current project." },
+        "deps": { manageDependencies, "Manage dependencies." },
     }
 }
 
@@ -32,7 +33,9 @@ func ExecuteAction(actionName string, args []string) bool {
     for cn, cmd := range *Commands {
         if cn == actionName {
             log.Printf("==> Executing action with name '%s'...\n", actionName)
-            cmd.ActionFunction(args)
+            if err := cmd.ActionFunction(args); err != nil {
+                log.Printf("Error: Error while executing action '%s': %v\n", actionName, err)
+            }
             return true
         }
     }
