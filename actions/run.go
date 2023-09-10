@@ -39,6 +39,7 @@ func runProject(args []string) error {
     // Execute the java command
     mainClass := *projectMainClass
 
+    // If the main class is not defined, it will default to the projectConfiguration's
     if *projectMainClass == "The one specified by 'jproj.json'" {
         mainClass = projectConfiguration.MainClassPath
     }

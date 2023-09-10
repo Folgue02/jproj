@@ -13,19 +13,19 @@ func manageDependencies(args []string) error {
 	action := parser.String(
 		"a",
 		"action",
-		&argparse.Options { Required: false, Default: "fetch", Help: "Action to be done on the dependencies."})
+		&argparse.Options{Required: false, Default: "fetch", Help: "Action to be done on the dependencies.(fetch, clean, add)"})
 	projectDirectory := parser.String(
 		"d",
 		"directory",
-		&argparse.Options { Required: false, Default: ".", Help: "Directory where the project is located."},
+		&argparse.Options{Required: false, Default: ".", Help: "Directory where the project is located."},
 	)
 
 	dependencyList := parser.StringList(
 		"e",
 		"dependency-list",
-		&argparse.Options { Required: false, Default: []string {}, Help: "List of dependencies."},
+		&argparse.Options{Required: false, Default: []string{}, Help: "List of dependencies."},
 	)
-	if err := parser.Parse(args);err != nil {
+	if err := parser.Parse(args); err != nil {
 		return fmt.Errorf("Wrong arguments: %v", err)
 	}
 
@@ -41,6 +41,7 @@ func manageDependencies(args []string) error {
 			return err
 		}
 	case "clean":
+		return deps.CleanDependencies(*projectDirectory, projectConfiguration)
 	case "add":
 		return deps.AddDependency(*projectDirectory, projectConfiguration, *dependencyList)
 	default:

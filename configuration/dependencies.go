@@ -12,11 +12,11 @@ import (
 
 type Dependency struct {
 	GroupID string `json:"groupID"`
-	Name string `json:"name"`
+	Name    string `json:"name"`
 	Version string `json:"version"`
 }
 
-// Parses the string passed with the following format: 
+// Parses the string passed with the following format:
 // {groupID}:{name}:{version} (i.e. org.junit.jupiter:junit-jupiter-api:5.10.0)
 func NewDependencyFromString(depString string) (*Dependency, error) {
 	splitDep := strings.Split(depString, ":")
@@ -30,7 +30,7 @@ func NewDependencyFromString(depString string) (*Dependency, error) {
 }
 
 func NewDependency(groupID, name, version string) Dependency {
-	return Dependency {
+	return Dependency{
 		groupID,
 		name,
 		version,

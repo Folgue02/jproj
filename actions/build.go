@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/akamensky/argparse"
 	"github.com/folgue02/jproj/configuration"
@@ -21,15 +22,12 @@ func buildProject(args []string) error {
     if err := parser.Parse(args); err != nil {
         return fmt.Errorf("Error: Something wrong with the arguments: %v", err)
     }
-
-    projectDirectoryStat, err := os.Stat(*projectDirectory)
-
+    projectConfiguration, err := configuration.LoadConfigurationFromFile(path.Join(*projectDirectory, "jproj.json"))
     if err != nil {
-        return fmt.Errorf("Error: Cannot stat project's directory due to the following error: %v", err)
-    } else if !projectDirectoryStat.IsDir() {
-        return fmt.Errorf("Error: The path to the project's directory specified ('%s') doesn't point to a directory.", *projectDirectory)
+        return fmt.Errorf("Cannot load project's configuration due to the following error: %v", err)
     }
 
+    // Get all java files in a slice
     javaFiles, err := utils.GrepFilesByExtension(path.Join(*projectDirectory, "src"), "java", utils.GrepFiles)
 
     if err != nil {
@@ -37,13 +35,16 @@ func buildProject(args []string) error {
     } else if len(javaFiles) == 0 {
         return fmt.Errorf("Error: No java source files found in the './src' directory.")
     }
-    projectConfiguration, err := configuration.LoadConfigurationFromFile(path.Join(*projectDirectory, "jproj.json"))
+
+    // Get all jar libs in a slice.
+    jarLibs, err := utils.GrepFilesByExtension(path.Join(*projectDirectory, projectConfiguration.ProjectLib), "jar", utils.GrepFiles)
+
     if err != nil {
-        return fmt.Errorf("Cannot load project's configuration due to the following error: %v", err)
+        return fmt.Errorf("Cannot list jar files in '%s': %v", projectConfiguration.ProjectLib, err)
     }
 
     // Build
-    err = buildSources(*projectDirectory, javaFiles, *projectConfiguration)
+    err = buildSources(*projectDirectory, javaFiles, jarLibs, *projectConfiguration)
 
     if err != nil {
         return fmt.Errorf("Error: Error while compiling with 'javac': %v", err)
@@ -58,11 +59,16 @@ func buildProject(args []string) error {
 // the arguments passed.)
 func buildSources(projectDirectory string,
     javaSources []string,
+    jarLibs []string,
     projectConfiguration configuration.Configuration) error {
     // Build the command
     cliCommand := javaSources 
     cliCommand = append(cliCommand, "-d")
     cliCommand = append(cliCommand, path.Join(projectDirectory, "./target/"))
+
+    if len(jarLibs) > 0 {
+        cliCommand = append(cliCommand, "-cp", strings.Join(jarLibs, ":"))
+    }
 
     log.Printf("Building project '%s'...\n", projectConfiguration.ProjectName)
 

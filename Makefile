@@ -4,7 +4,7 @@ init:
 run: build
 	@echo '---------------------< Executing >---------------------'
 	@./bin/jproj
-	
+
 build: init
 	go build -o './bin/jproj'
 
@@ -26,3 +26,5 @@ clean-test-newproj:
 test-build: test-newproj
 	./bin/jproj build -d './test_playground/newproject'
 
+install: build
+	cp ./bin/jproj ~/.local/bin
