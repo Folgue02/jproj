@@ -9,17 +9,36 @@ import (
 	"github.com/folgue02/jproj/configuration"
 )
 
-func clean(args []string) error {
+type CleanConfiguration struct {
+    Directory string
+}
+
+func NewCleanConfiguration(args []string) (*CleanConfiguration, error) {
     parser := argparse.NewParser("clean", "Cleans/Remove generated files.")    
     projectDirectory := parser.String(
         "d",
         "directory",
         &argparse.Options { Required: false, Default: ".", Help: "Project's directory."})
-    parser.Parse(args)
 
-    projectConfig, err := configuration.LoadConfigurationFromFile(*projectDirectory)
+    if err := parser.Parse(args); err != nil {
+        return nil, err
+    }
 
-    targetPath := path.Join(*projectDirectory, projectConfig.ProjectTarget)
+    return &CleanConfiguration {
+        Directory: *projectDirectory,
+    }, nil
+}
+
+func clean(args []string) error {
+    cleanConfig, err := NewCleanConfiguration(args)
+
+    if err != nil {
+        return fmt.Errorf("Wrong arguments: %v", err)
+    }
+
+    projectConfig, err := configuration.LoadConfigurationFromFile(cleanConfig.Directory)
+
+    targetPath := path.Join(cleanConfig.Directory, projectConfig.ProjectTarget)
     
     entries, err := os.ReadDir(targetPath)
 

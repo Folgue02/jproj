@@ -8,7 +8,13 @@ import (
 	"github.com/folgue02/jproj/configuration"
 )
 
-func manageDependencies(args []string) error {
+type ManageDependenciesConfiguration struct {
+    ActionName string
+    Directory string
+    DependencyList []string
+}
+
+func NewManageDependenciesConfiguration(args []string) (*ManageDependenciesConfiguration, error) {
 	parser := argparse.NewParser("deps", "Manages dependencies")
 	action := parser.String(
 		"a",
@@ -26,26 +32,40 @@ func manageDependencies(args []string) error {
 		&argparse.Options{Required: false, Default: []string{}, Help: "List of dependencies."},
 	)
 	if err := parser.Parse(args); err != nil {
+		return nil, err
+	}
+
+    return &ManageDependenciesConfiguration {
+        ActionName: *action,
+        Directory: *projectDirectory,
+        DependencyList: *dependencyList,
+    }, nil
+}
+
+func manageDependencies(args []string) error {
+    depConfig, err := NewManageDependenciesConfiguration(args)
+
+	if err != nil {
 		return fmt.Errorf("Wrong arguments: %v", err)
 	}
 
-	projectConfiguration, err := configuration.LoadConfigurationFromFile(*projectDirectory)
+	projectConfiguration, err := configuration.LoadConfigurationFromFile(depConfig.Directory)
 
 	if err != nil {
 		return fmt.Errorf("Cannot load configuration due to the following error: %v", err)
 	}
 
-	switch *action {
+	switch depConfig.ActionName {
 	case "fetch":
-		if err := deps.Fetch(*projectDirectory, *projectConfiguration); err != nil {
+		if err := deps.Fetch(depConfig.Directory, *projectConfiguration); err != nil {
 			return err
 		}
 	case "clean":
-		return deps.CleanDependencies(*projectDirectory, projectConfiguration)
+		return deps.CleanDependencies(depConfig.Directory, projectConfiguration)
 	case "add":
-		return deps.AddDependency(*projectDirectory, projectConfiguration, *dependencyList)
+		return deps.AddDependency(depConfig.Directory, projectConfiguration, depConfig.DependencyList)
 	default:
-		return fmt.Errorf("Action not found: '%s'", *action)
+		return fmt.Errorf("Action not found: '%s'", depConfig.ActionName)
 	}
 
 	return nil
