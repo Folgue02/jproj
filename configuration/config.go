@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"text/tabwriter"
+
+	"github.com/folgue02/jproj/utils"
 )
 
 type Configuration struct {
@@ -187,4 +189,8 @@ func LoadConfigurationFromFile(filePath string) (*Configuration, error) {
 	}
 
 	return LoadConfigurationFromString(string(fileContent))
+}
+
+func (c Configuration) ListJarInLib(filePath string) ([]string, error) {
+    return utils.GrepFilesByExtension(path.Join(filePath, c.ProjectLib), "jar", utils.GrepFiles)
 }

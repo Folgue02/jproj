@@ -1,29 +1,47 @@
 package templates
 
 import (
-	"fmt"
-	"strings"
+	"bytes"
+	"text/template"
 )
 
 // TODO: Change this to use text/templates
 
 const (
-	ClassTemplate = `
-package <Package>;
+	ClassTemplate = `package {{ .Package }};
 
-public class <Name> {
+public class {{ .Name }} {
+
 }`
-	InterfaceTemplate = `
-package <Package>;
+	InterfaceTemplate = `package {{ .Package }};
 
-public interface <Name> {
+public interface {{ .Name }} {
+    
 }`
-	EnumTemplate = `
-package <Package>;
+	EnumTemplate = `package {{ .Package }};
 
-public enum <Name> {
+public enum {{ .Name }} {
+
+}`
+
+	NoPackageClassTemplate = `
+public class {{ .Name }} {
+
+}`
+	NoPackageInterfaceTemplate = `
+public interface {{ .Name }} {
+
+}`
+	NoPackageEnumTemplate = `
+public enum {{ .Name }} {
+
 }`
 )
+
+type NewElementInfo struct {
+    Package string
+    Name string
+}
 
 const (
 	ElementTypeClass     = "class"
@@ -36,26 +54,34 @@ const (
 // If it doesn't, (nil, false) will be returned. NOTE: `elementName` doesn't get
 // checked, so this element name can be invalid.
 func GenerateTemplate(elementType, elementName, elementPackage string) (*string, bool) {
-	var result string
-	switch elementType {
-	case ElementTypeClass:
-		result = strings.Replace(
-			strings.Replace(ClassTemplate, "<Name>", elementName, -1),
-			"<Package>",
-			elementPackage, -1)
-	case ElementTypeInterface:
-		result = strings.Replace(
-			strings.Replace(InterfaceTemplate, "<Name>", elementName, -1),
-			"<Package>",
-			elementPackage, -1)
-	case ElementTypeEnum:
-		result = strings.Replace(
-			strings.Replace(EnumTemplate, "<Name>", elementName, -1),
-			"<Package>",
-			elementPackage, -1)
-	default:
-		return nil, false
-	}
-	fmt.Printf("Generated template: %s\n", result)
-	return &result, true
+    result := bytes.NewBufferString("")
+
+    templ := template.New("Data")
+
+    if elementPackage == "" {
+        switch elementType {
+        case ElementTypeClass:
+            templ.Parse(NoPackageClassTemplate)
+        case ElementTypeInterface:
+            templ.Parse(NoPackageInterfaceTemplate)
+        case ElementTypeEnum:
+            templ.Parse(NoPackageEnumTemplate)
+        default:
+            return nil, false
+        }
+    } else {
+        switch elementType {
+        case ElementTypeClass:
+            templ.Parse(ClassTemplate)
+        case ElementTypeInterface:
+            templ.Parse(InterfaceTemplate)
+        case ElementTypeEnum:
+            templ.Parse(EnumTemplate)
+        default:
+            return nil, false
+        }
+    }
+    templ.Execute(result, NewElementInfo { Name: elementName, Package: elementPackage })
+    resultString := result.String()
+	return &resultString, true
 }

@@ -11,6 +11,8 @@ build: init
 test:
 	go test ./utils
 	go test ./configuration
+	go test ./actions
+	go test ./templates
 
 clean:
 	rm -rf './bin'

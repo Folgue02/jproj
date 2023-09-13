@@ -3,11 +3,11 @@ package actions
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
+	"strings"
 
 	"github.com/akamensky/argparse"
 	"github.com/folgue02/jproj/configuration"
+	"github.com/folgue02/jproj/utils"
 )
 
 type RunConfiguration struct {
@@ -64,13 +64,14 @@ func runProject(args []string) error {
 		mainClass = projectConfiguration.MainClassPath
 	}
 
-	javaArgs := []string{"-cp", projectConfiguration.ProjectTarget, mainClass}
-	log.Printf("---< Executing 'java' with args %v >---\n", javaArgs)
-	cmd := exec.Command("java", javaArgs...)
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+    jarLibs, err := projectConfiguration.ListJarInLib(runConfig.Directory)
+
+    if err != nil {
+        return fmt.Errorf("Couldn't list jars in the lib folder: %v", err)
+    }
+    
+    javaArgs := buildRunJavaArgs(*runConfig, *projectConfiguration, mainClass, jarLibs)
+    err = utils.CMD("java", javaArgs...)
 
 	if err != nil {
 		return fmt.Errorf("Error: Error while running with 'java': %v", err)
@@ -79,3 +80,12 @@ func runProject(args []string) error {
 		return nil
 	}
 }
+    //jarLibs, err := utils.GrepFilesByExtension(path.Join(buildConfig.Directory, projectConfiguration.ProjectLib), "jar", utils.GrepFiles)
+func buildRunJavaArgs(runConfig RunConfiguration, projectConfig configuration.Configuration, mainClass string, jarLibs []string) []string {
+    jarLibs = append(jarLibs, projectConfig.ProjectTarget)
+    classPath := strings.Join(jarLibs, ":")
+	javaArgs := []string{"-cp", classPath, mainClass}
+
+    return javaArgs
+}
+

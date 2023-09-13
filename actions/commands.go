@@ -21,6 +21,7 @@ func InitializeCommands() {
         "new": { newElement, "Adds/Creates a new element to the project." },
         "run": { runProject, "Runs the current project." },
         "deps": { manageDependencies, "Manage dependencies." },
+        "jar": { CreateJar, "Creates a jar based on the project specified." },
     }
 }
 
