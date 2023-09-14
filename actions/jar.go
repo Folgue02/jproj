@@ -57,7 +57,7 @@ func CreateJar(args []string) error {
 
 func buildJarCommand(jarConfig JarCommandConfiguration, projectConfig configuration.Configuration) []string {
     args := []string { "--create", "--file" }
-    args = append(args, projectConfig.ProjectName + ".jar")
+    args = append(args, path.Join(jarConfig.Directory, projectConfig.ProjectBin, projectConfig.ProjectName) + ".jar")
     args = append(args, "-C", path.Join(jarConfig.Directory, projectConfig.ProjectTarget), ".")
     return args 
 }

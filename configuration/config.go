@@ -19,6 +19,8 @@ type Configuration struct {
 	ProjectVersion     string       `json:"project_version"`
 	ProjectTarget      string       `json:"project_target_path"`
 	ProjectLib         string       `json:"project_lib_path"`
+    ProjectBin         string       `json:"project_bin_path"`
+    Manifest           JavaManifest `json:"manifest,omitempty"`
 	MainClassPath      string       `json:"main_class_path"`
 	Dependencies       []Dependency `json:"dependencies"`
 }
@@ -31,6 +33,7 @@ func NewConfiguration(projectName string) Configuration {
 		ProjectVersion:     "1.0",
 		ProjectTarget:      "./target",
 		ProjectLib:         "./lib",
+        ProjectBin:         "./bin",
 		MainClassPath:      "App",
 		Dependencies:       []Dependency{},
 	}
@@ -47,7 +50,7 @@ func (c Configuration) CreateProject(baseDirectory string) error {
 		return err
 	}
 
-	for _, dir := range []string{c.ProjectTarget, c.ProjectLib, "./src"} {
+	for _, dir := range []string{c.ProjectTarget, c.ProjectLib, "./src", c.ProjectBin} {
 		err := os.MkdirAll(path.Join(baseDirectory, dir), 0750)
 
 		if err != nil {
@@ -159,6 +162,7 @@ func (c Configuration) String() string {
 	fmt.Fprintf(tw, "Version\t%s\n", c.ProjectVersion)
 	fmt.Fprintf(tw, "Target directory\t%s\n", c.ProjectTarget)
 	fmt.Fprintf(tw, "Lib directory\t%s\n", c.ProjectLib)
+    fmt.Fprintf(tw, "Bin directory\t%s\n", c.ProjectBin)
 	fmt.Fprintf(tw, "Main class\t%s\n", c.MainClassPath)
 
 	if len(c.Dependencies) > 0 {
