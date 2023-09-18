@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"path"
 	"testing"
 
 	"github.com/folgue02/jproj/configuration"
@@ -14,7 +15,9 @@ func TestBuildJarCommand(t *testing.T) {
         ProjectTarget: "target",
     }
 
-    expected := []string { "--create", "--file", "testing.jar", "-C", "target", "." }
+    expected := []string { "--create", "--file", "testing.jar", 
+        "--manifest", path.Join(jarConfig.Directory, "target", "MANIFEST.mf"),
+        "-C", "target", "." }
     output := buildJarCommand(jarConfig, projectConfig)
 
     display := func(expected, output []string) string {

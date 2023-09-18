@@ -80,7 +80,7 @@ func buildSources(projectDirectory string,
     // Build the command
     cliCommand := javaSources 
     cliCommand = append(cliCommand, "-d")
-    cliCommand = append(cliCommand, path.Join(projectDirectory, "./target/"))
+    cliCommand = append(cliCommand, path.Join(projectDirectory, projectConfiguration.ProjectTarget))
 
     if len(jarLibs) > 0 {
         cliCommand = append(cliCommand, "-cp", strings.Join(jarLibs, ":"))

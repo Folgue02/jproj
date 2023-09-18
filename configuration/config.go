@@ -21,7 +21,7 @@ type Configuration struct {
 	ProjectLib         string       `json:"project_lib_path"`
     ProjectBin         string       `json:"project_bin_path"`
     Manifest           JavaManifest `json:"manifest,omitempty"`
-	MainClassPath      string       `json:"main_class_path"`
+	MainClassPath      string       `json:"main_class_path,omitempty"`
 	Dependencies       []Dependency `json:"dependencies"`
 }
 
@@ -31,9 +31,9 @@ func NewConfiguration(projectName string) Configuration {
 		ProjectAuthor:      "anon",
 		ProjectDescription: "A Java project.",
 		ProjectVersion:     "1.0",
-		ProjectTarget:      "./target",
+		ProjectTarget:      "./target/classes",
 		ProjectLib:         "./lib",
-        ProjectBin:         "./bin",
+        ProjectBin:         "./target/bin",
 		MainClassPath:      "App",
 		Dependencies:       []Dependency{},
 	}
@@ -96,7 +96,7 @@ func (c *Configuration) SaveConfiguration(destPath string) error {
 
 	configContent, _ := json.MarshalIndent(c, "", "    ")
 
-	err = os.WriteFile(destPath, configContent, 0750)
+	err = os.WriteFile(destPath, configContent, utils.DefaultFilePermission)
 
 	if err != nil {
 		return fmt.Errorf("Cannot write to config file due to the following error: %v", err)
@@ -153,6 +153,10 @@ func LoadConfigurationFromString(rawString string) (*Configuration, error) {
 	return &config, err
 }
 
+func (c *Configuration) IsExecutableProject() bool {
+    return c.MainClassPath != ""
+}
+
 func (c Configuration) String() string {
 	var result string
 	resultWriter := bytes.NewBufferString(result)
@@ -163,7 +167,9 @@ func (c Configuration) String() string {
 	fmt.Fprintf(tw, "Target directory\t%s\n", c.ProjectTarget)
 	fmt.Fprintf(tw, "Lib directory\t%s\n", c.ProjectLib)
     fmt.Fprintf(tw, "Bin directory\t%s\n", c.ProjectBin)
-	fmt.Fprintf(tw, "Main class\t%s\n", c.MainClassPath)
+    if c.MainClassPath != "" {
+        fmt.Fprintf(tw, "Main class\t%s\n", c.MainClassPath)
+    }
 
 	if len(c.Dependencies) > 0 {
 		fmt.Fprintf(tw, "Dependencies\t%s\n", c.Dependencies[0])

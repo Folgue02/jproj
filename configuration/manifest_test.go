@@ -27,6 +27,6 @@ Version: 2.3
     }
 
     if *result != expected {
-        t.Errorf("Different (\n---Expected:\n%s\n---Result:\n %s", expected, *result)
+        t.Errorf("Different (\n---Expected:\n%s\n---Result:\n%s", expected, *result)
     }
 }

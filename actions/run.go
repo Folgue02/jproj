@@ -56,6 +56,10 @@ func runProject(args []string) error {
 		return fmt.Errorf("Error: Cannot load configuration due to the following error: %v", err)
 	}
 
+    if !projectConfiguration.IsExecutableProject() {
+        return fmt.Errorf("The project is not executable (empty/non specified mainclass)");
+    }
+
 	// Execute the java command
 	mainClass := runConfig.MainClass
 

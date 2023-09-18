@@ -8,13 +8,20 @@ import (
 	"strings"
 )
 
+type GrepMode uint
+
 const (
-    GrepFiles uint = 0
+    GrepFiles GrepMode = 0
     GrepDir
     GrepAll
 )
 
-func GrepFilesByExtension(targetPath, extension string, mode uint) ([]string, error) {
+const (
+    DefaultFilePermission = 0650
+    DefaultDirPermission = 0750
+)
+
+func GrepFilesByExtension(targetPath, extension string, mode GrepMode) ([]string, error) {
     paths := make([]string, 0)
 
     err := filepath.Walk(targetPath, func(path string, fileInfo fs.FileInfo, err error) error {

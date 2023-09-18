@@ -44,6 +44,13 @@ func CreateJar(args []string) error {
         return err
     }
 
+    // Save manifest
+    err = projectConfig.Manifest.WriteToFile(path.Join(jarConfig.Directory, projectConfig.ProjectTarget, "MANIFEST.mf"))
+
+    if err != nil {
+        return fmt.Errorf("Couldn't save manifest file: %v", err)
+    }
+
     cliArgs := buildJarCommand(*jarConfig, *projectConfig)
 
     err = utils.CMD("jar", cliArgs...)
@@ -58,6 +65,10 @@ func CreateJar(args []string) error {
 func buildJarCommand(jarConfig JarCommandConfiguration, projectConfig configuration.Configuration) []string {
     args := []string { "--create", "--file" }
     args = append(args, path.Join(jarConfig.Directory, projectConfig.ProjectBin, projectConfig.ProjectName) + ".jar")
+    args = append(args, "--manifest", path.Join(jarConfig.Directory, projectConfig.ProjectTarget, "MANIFEST.mf"))
+    if projectConfig.IsExecutableProject() {
+        args = append(args, "--main-class", projectConfig.MainClassPath)
+    }
     args = append(args, "-C", path.Join(jarConfig.Directory, projectConfig.ProjectTarget), ".")
     return args 
 }

@@ -2,8 +2,11 @@ package configuration
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/folgue02/jproj/utils"
 )
 
 type JavaManifest map[string]any
@@ -47,4 +50,16 @@ func (j JavaManifest) ToManifest() (*string, error) {
 
     resultString := s.String()
     return &resultString, nil;
+}
+
+// Outputs the contents of the manifest to an specified file.
+// error can be returned if either the manifest is invalid, or
+// the manifest cannot be written.
+func (j JavaManifest) WriteToFile(filePath string) error {
+    manifestString, err := j.ToManifest()
+
+    if err != nil {
+        return fmt.Errorf("Cannot write to file because the manifest is invalid: %v", err) 
+    }
+    return os.WriteFile(filePath, []byte(*manifestString), utils.DefaultFilePermission)
 }
