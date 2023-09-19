@@ -49,25 +49,17 @@ func NewNewElementConfiguration(args []string) (*NewElementConfiguration, error)
 	}, nil
 }
 
-func NewElement(args []string) error {
-	// parser := argparse.NewParser("new", "Add elements to the project.")
-	// projectDirectory := parser.String(
-	// 	"d",
-	// 	"directory",
-	// 	&argparse.Options{Required: false, Default: ".", Help: "Specifies in what directory the project is."})
-	// elementType := parser.String(
-	// 	"t",
-	// 	"type",
-	// 	&argparse.Options{Required: false, Default: "class", Help: "Specifies what type of element."})
-	// elementName := parser.String(
-	// 	"n",
-	// 	"name",
-	// 	&argparse.Options{Required: true, Help: "Name of the new element"})
+func NewElementActionHandler(args []string) error {
 	newElementConfiguration, err := NewNewElementConfiguration(args)
 
 	if err != nil {
 		return fmt.Errorf("Error: Wrong arguments: %v", err)
 	}
+
+    return NewElementAction(*newElementConfiguration)
+}
+
+func NewElementAction(newElementConfiguration NewElementConfiguration) error {
 
 	jpp := utils.NewJavaPackagePath(newElementConfiguration.ElementName)
 
@@ -91,7 +83,7 @@ func NewElement(args []string) error {
 	javaFilePath := path.Join(newElementConfiguration.Directory, "src", jpp.ToJavaFilePath())
 	javaFilePathDir := path.Dir(javaFilePath)
 
-	err = os.MkdirAll(javaFilePathDir, 0750)
+    err := os.MkdirAll(javaFilePathDir, 0750)
 
 	if err != nil {
 		return fmt.Errorf("Error: Cannot create the file's base path ('%s') due to the following error: %v", javaFilePathDir, err)

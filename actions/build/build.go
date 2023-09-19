@@ -33,11 +33,17 @@ func NewBuildProjectConfiguration(args []string) (*BuildProjectConfiguration, er
     }, nil
 }
 
-func BuildProject(args []string) error {
+func BuildActionHandler(args []string) error {
     buildConfig, err := NewBuildProjectConfiguration(args)
+
     if err != nil {
-        return fmt.Errorf("Error: Something wrong with the arguments: %v", err)
+        return err
     }
+
+    return BuildAction(*buildConfig)
+}
+
+func BuildAction(buildConfig BuildProjectConfiguration) error {
     projectConfiguration, err := configuration.LoadConfigurationFromFile(path.Join(buildConfig.Directory, "jproj.json"))
     if err != nil {
         return fmt.Errorf("Cannot load project's configuration due to the following error: %v", err)

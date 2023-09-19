@@ -38,16 +38,19 @@ func NewRunConfiguration(args []string) (*RunConfiguration, error) {
 	}, nil
 }
 
-func RunProject(args []string) error {
-
+func RunProjectActionHandler(args []string) error {
 	runConfig, err := NewRunConfiguration(args)
 
 	if err != nil {
 		return fmt.Errorf("Error with arguments: %v", err)
 	}
+    
+    return RunProjectAction(*runConfig)
+}
 
+func RunProjectAction(runConfig RunConfiguration) error {
 	// Running the project requires building it first
-	if err := build.BuildProject([]string{"build", "-d", runConfig.Directory}); err != nil {
+    if err := build.BuildAction(build.BuildProjectConfiguration { Directory: runConfig.Directory }); err != nil {
 		return fmt.Errorf("Error: Cannot build the project: %v", err)
 	}
 
@@ -75,7 +78,7 @@ func RunProject(args []string) error {
         return fmt.Errorf("Couldn't list jars in the lib folder: %v", err)
     }
     
-    javaArgs := buildRunJavaArgs(*runConfig, *projectConfiguration, mainClass, jarLibs)
+    javaArgs := buildRunJavaArgs(runConfig, *projectConfiguration, mainClass, jarLibs)
     err = utils.CMD("java", javaArgs...)
 
 	if err != nil {

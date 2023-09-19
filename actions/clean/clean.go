@@ -24,7 +24,7 @@ func NewCleanConfiguration(args []string) (*CleanConfiguration, error) {
     binCleaningFlag := parser.Flag(
         "b",
         "clean-bin-path",
-        &argparse.Options { Required: false, Default: false, Help: "Clean the binary output directory." })
+        &argparse.Options { Required: false, Default: false, Help: "Also clean the binary output directory." })
 
     if err := parser.Parse(args); err != nil {
         return nil, err
@@ -36,14 +36,22 @@ func NewCleanConfiguration(args []string) (*CleanConfiguration, error) {
     }, nil
 }
 
-func CleanProject(args []string) error {
+func CleanActionHandler(args []string) error {
     cleanConfig, err := NewCleanConfiguration(args)
 
     if err != nil {
         return fmt.Errorf("Wrong arguments: %v", err)
     }
 
+    return CleanAction(*cleanConfig)
+}
+
+func CleanAction(cleanConfig CleanConfiguration) error {
     projectConfig, err := configuration.LoadConfigurationFromFile(cleanConfig.Directory)
+
+    if err != nil {
+        return fmt.Errorf("Couldn't load project's configuration: %v", err)
+    }
 
     targetPath := path.Join(cleanConfig.Directory, projectConfig.ProjectTarget)
     

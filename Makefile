@@ -11,7 +11,7 @@ build: init
 test:
 	go test ./utils
 	go test ./configuration
-	go test ./actions
+	go test ./actions/jar
 	go test ./templates
 
 clean:

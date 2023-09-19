@@ -30,13 +30,17 @@ func NewListProjectConfiguration(args []string) (*ListProjectConfiguration, erro
     }, nil
 }
 
-func ListProject(args []string) error{
+func ListProjectActionHandler(args []string) error {
     listConfig, err := NewListProjectConfiguration(args)
 
     if err != nil {
         return fmt.Errorf("Wrong arguments: %v", err)
     }
 
+    return ListProjectAction(*listConfig)
+}
+
+func ListProjectAction(listConfig ListProjectConfiguration) error{
     stat, err := os.Stat(listConfig.Directory)
 
     if err != nil {

@@ -30,13 +30,17 @@ func NewCreateProjectConfiguration(args []string) (*CreateProjectConfiguration, 
     }, nil
 }
 
-func CreateProject(args []string) error {
+func CreateProjectActionHandler(args []string) error {
     createProjectConfiguration, err := NewCreateProjectConfiguration(args)
 
     if  err != nil {
         return fmt.Errorf("Error on argument parsing: %v", err)
-
     }
+
+    return CreateProjectAction(*createProjectConfiguration)
+}
+
+func CreateProjectAction(createProjectConfiguration CreateProjectConfiguration) error {
     config := configuration.NewConfiguration(createProjectConfiguration.Name)
 
     if err := config.CreateProject(createProjectConfiguration.Directory); err != nil {

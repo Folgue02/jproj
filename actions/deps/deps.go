@@ -41,12 +41,17 @@ func NewManageDependenciesConfiguration(args []string) (*ManageDependenciesConfi
     }, nil
 }
 
-func ManageDependencies(args []string) error {
+func ManageDependenciesActionHandler(args []string) error {
     depConfig, err := NewManageDependenciesConfiguration(args)
 
 	if err != nil {
 		return fmt.Errorf("Wrong arguments: %v", err)
 	}
+
+    return ManageDependenciesAction(*depConfig)
+}
+
+func ManageDependenciesAction(depConfig ManageDependenciesConfiguration) error {
 
 	projectConfiguration, err := configuration.LoadConfigurationFromFile(depConfig.Directory)
 

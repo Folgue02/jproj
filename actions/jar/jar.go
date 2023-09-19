@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/akamensky/argparse"
+	"github.com/folgue02/jproj/actions/build"
 	"github.com/folgue02/jproj/configuration"
 	"github.com/folgue02/jproj/utils"
 )
@@ -45,19 +46,28 @@ func NewJarCommandConfiguration(args []string) (*JarCommandConfiguration, error)
     }, nil
 }
 
-
-func CreateJar(args []string) error {
+func CreateJarActionHandler(args []string) error {
     jarConfig, err := NewJarCommandConfiguration(args)
 
     if err != nil  {
         return err
     }
     
+    return CreateJarAction(*jarConfig)
+}
+
+func CreateJarAction(jarConfig JarCommandConfiguration) error {
     projectConfig, err := configuration.LoadConfigurationFromFile(jarConfig.Directory)
 
     if err != nil {
         return err
     }
+
+    if err = build.BuildAction(build.BuildProjectConfiguration { Directory: jarConfig.Directory });
+        err != nil {
+            return fmt.Errorf("Error while compiling sources pre-jar: %v", err)
+    }
+
 
     // Save manifest
     err = projectConfig.Manifest.WriteToFile(path.Join(jarConfig.Directory, projectConfig.ProjectTarget, "MANIFEST.mf"))
@@ -66,7 +76,7 @@ func CreateJar(args []string) error {
         return fmt.Errorf("Couldn't save manifest file: %v", err)
     }
 
-    cliArgs := buildJarCommand(*jarConfig, *projectConfig)
+    cliArgs := buildJarCommand(jarConfig, *projectConfig)
 
     err = utils.CMD("jar", cliArgs...)
 

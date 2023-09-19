@@ -9,7 +9,7 @@ import (
 
 // Lists all actions stored in the global variable 'Actions'
 // accompanied by their help messages.
-func ListActions(args []string) error {
+func ListActionsAction(args []string) error {
     tw := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
     // fmt.Fprintln(tw, "Action\tDescription")
     // fmt.Fprintln(tw, "------\t-----------")
