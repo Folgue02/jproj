@@ -45,6 +45,27 @@ func GrepFilesByExtension(targetPath, extension string, mode GrepMode) ([]string
     return paths, nil
 }
 
+// Removes all contents from the specified directory without erasing 
+// the directory itself. In case something fails (dirPath doesn't exist, 
+// cannot remove certain item...), the value will hold an error.
+func CleanDirectory(dirPath string) error {
+    entries, err := os.ReadDir(dirPath)
+
+    if err != nil {
+        return err
+    }
+
+    for _, entry := range entries {
+        err = os.RemoveAll(path.Join(dirPath, entry.Name()))
+
+        if err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
 // Checks if the directory specified contains a valid structure.
 // 
 // Checks performed:
