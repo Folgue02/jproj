@@ -1,10 +1,9 @@
-package actions
+package deps
 
 import (
 	"fmt"
 
 	"github.com/akamensky/argparse"
-	"github.com/folgue02/jproj/actions/deps"
 	"github.com/folgue02/jproj/configuration"
 )
 
@@ -42,7 +41,7 @@ func NewManageDependenciesConfiguration(args []string) (*ManageDependenciesConfi
     }, nil
 }
 
-func manageDependencies(args []string) error {
+func ManageDependencies(args []string) error {
     depConfig, err := NewManageDependenciesConfiguration(args)
 
 	if err != nil {
@@ -57,13 +56,13 @@ func manageDependencies(args []string) error {
 
 	switch depConfig.ActionName {
 	case "fetch":
-		if err := deps.Fetch(depConfig.Directory, *projectConfiguration); err != nil {
+		if err := Fetch(depConfig.Directory, *projectConfiguration); err != nil {
 			return err
 		}
 	case "clean":
-		return deps.CleanDependencies(depConfig.Directory, projectConfiguration)
+		return CleanDependencies(depConfig.Directory, projectConfiguration)
 	case "add":
-		return deps.AddDependency(depConfig.Directory, projectConfiguration, depConfig.DependencyList)
+		return AddDependency(depConfig.Directory, projectConfiguration, depConfig.DependencyList)
 	default:
 		return fmt.Errorf("Action not found: '%s'", depConfig.ActionName)
 	}

@@ -1,4 +1,4 @@
-package actions
+package build
 
 import (
 	"fmt"
@@ -33,7 +33,7 @@ func NewBuildProjectConfiguration(args []string) (*BuildProjectConfiguration, er
     }, nil
 }
 
-func buildProject(args []string) error {
+func BuildProject(args []string) error {
     buildConfig, err := NewBuildProjectConfiguration(args)
     if err != nil {
         return fmt.Errorf("Error: Something wrong with the arguments: %v", err)

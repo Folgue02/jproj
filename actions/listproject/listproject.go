@@ -1,4 +1,4 @@
-package actions
+package listproject
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func NewListProjectConfiguration(args []string) (*ListProjectConfiguration, erro
     }, nil
 }
 
-func listproject(args []string) error{
+func ListProject(args []string) error{
     listConfig, err := NewListProjectConfiguration(args)
 
     if err != nil {

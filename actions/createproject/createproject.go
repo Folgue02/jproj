@@ -1,4 +1,4 @@
-package actions
+package createproject
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func NewCreateProjectConfiguration(args []string) (*CreateProjectConfiguration, 
     }, nil
 }
 
-func createproject(args []string) error {
+func CreateProject(args []string) error {
     createProjectConfiguration, err := NewCreateProjectConfiguration(args)
 
     if  err != nil {

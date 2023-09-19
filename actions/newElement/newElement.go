@@ -49,7 +49,7 @@ func NewNewElementConfiguration(args []string) (*NewElementConfiguration, error)
 	}, nil
 }
 
-func newElement(args []string) error {
+func NewElement(args []string) error {
 	// parser := argparse.NewParser("new", "Add elements to the project.")
 	// projectDirectory := parser.String(
 	// 	"d",

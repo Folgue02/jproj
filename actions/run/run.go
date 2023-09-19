@@ -1,4 +1,4 @@
-package actions
+package run
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/akamensky/argparse"
+	"github.com/folgue02/jproj/actions/build"
 	"github.com/folgue02/jproj/configuration"
 	"github.com/folgue02/jproj/utils"
 )
@@ -37,7 +38,7 @@ func NewRunConfiguration(args []string) (*RunConfiguration, error) {
 	}, nil
 }
 
-func runProject(args []string) error {
+func RunProject(args []string) error {
 
 	runConfig, err := NewRunConfiguration(args)
 
@@ -46,7 +47,7 @@ func runProject(args []string) error {
 	}
 
 	// Running the project requires building it first
-	if err := buildProject([]string{"build", "-d", runConfig.Directory}); err != nil {
+	if err := build.BuildProject([]string{"build", "-d", runConfig.Directory}); err != nil {
 		return fmt.Errorf("Error: Cannot build the project: %v", err)
 	}
 

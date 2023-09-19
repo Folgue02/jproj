@@ -7,7 +7,9 @@ import (
 	"text/tabwriter"
 )
 
-func listactions(args []string) error {
+// Lists all actions stored in the global variable 'Actions'
+// accompanied by their help messages.
+func ListActions(args []string) error {
     tw := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
     // fmt.Fprintln(tw, "Action\tDescription")
     // fmt.Fprintln(tw, "------\t-----------")
@@ -15,7 +17,7 @@ func listactions(args []string) error {
     if len(args) > 1 {
         count := 0
         for _, actionName := range args[1:] {
-            for cn, cmd := range *Commands {
+            for cn, cmd := range *Actions {
                 if cn == actionName {
                     fmt.Fprintf(tw, "%s:\t%s\n", cn, cmd.HelpMsg)
                     count += 1
@@ -28,7 +30,7 @@ func listactions(args []string) error {
             log.Println("No actions found with the names you've specified.")
         }
     } else {
-        for cn, cmd := range *Commands {
+        for cn, cmd := range *Actions {
             fmt.Fprintf(tw, "%s:\t%s\n", cn, cmd.HelpMsg)
         }
         tw.Flush()

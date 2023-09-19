@@ -1,4 +1,4 @@
-package actions
+package clean
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ func NewCleanConfiguration(args []string) (*CleanConfiguration, error) {
     }, nil
 }
 
-func clean(args []string) error {
+func CleanProject(args []string) error {
     cleanConfig, err := NewCleanConfiguration(args)
 
     if err != nil {
