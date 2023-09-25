@@ -1,10 +1,6 @@
 init:
 	if [ ! -d ./bin ]; then mkdir './bin';fi
 
-run: build
-	@echo '---------------------< Executing >---------------------'
-	@./bin/jproj
-
 build: init
 	go build -o './bin/jproj'
 

@@ -68,8 +68,47 @@ func (c Configuration) CreateProject(baseDirectory string) error {
 	return nil
 }
 
-// Checks if there is a dependency with the same name as the one
-// specified.
+// Checks the integrity of the project, checking the existence of directories.
+// If anything is wrong with the project, this method will return an error with
+// a string containing each problem. NOTE: This method doesn't check if the 
+// configuration file exists.
+func (c *Configuration) Validate(location string) error {
+    paths := []string { 
+        c.ProjectBin,
+        c.ProjectLib,
+        "./src/",
+    }
+
+    errors := []string {}
+
+    for _, p := range paths {
+        fullP := path.Join(location, p)
+
+        pathStat, err := os.Stat(fullP)
+
+        if err != nil {
+            errors = append(errors, fmt.Sprintf("Cannot stat project directory '%s': %s", fullP, err))
+        }
+
+        if !pathStat.IsDir() {
+            errors = append(errors, fmt.Sprintf("Path '%s' is not a directory", fullP))
+        }
+    }
+
+    if len(errors) > 0 {
+        sBuilder := bytes.NewBufferString("Problems encountered: \n")
+
+        for i, e := range errors {
+            sBuilder.WriteString(fmt.Sprintf("[%d]: %s\n", i, e))
+        }
+
+        return fmt.Errorf("%s", sBuilder.String())
+    }
+    return nil
+}
+
+// Checks if there is a dependency with the same name as one
+// specified inside of the .Dependencies attribute.
 func (c *Configuration) DependencyExists(name string) bool {
 	for _, dep := range c.Dependencies {
 		if dep.Name == name {
@@ -142,6 +181,8 @@ func (c Configuration) FetchDependencies(projectDirectory string) error {
 	return nil
 }
 
+// Returns a 'Configuration' object based on the string passed (this should be
+// in json format representing the configuration)
 func LoadConfigurationFromString(rawString string) (*Configuration, error) {
 	var config Configuration
 	err := json.Unmarshal([]byte(rawString), &config)
@@ -153,6 +194,9 @@ func LoadConfigurationFromString(rawString string) (*Configuration, error) {
 	return &config, err
 }
 
+// Checks if the configuration of the project contains a main class or
+// not, if the .MainClassPath attribute is set to "", it would mean that 
+// the project is not meant to be executed.
 func (c *Configuration) IsExecutableProject() bool {
     return c.MainClassPath != ""
 }
@@ -183,6 +227,10 @@ func (c Configuration) String() string {
 	return resultWriter.String()
 }
 
+// Returns a 'Configuration' object created by reading the file specified.
+//
+// NOTE: If a directory is specified instead of a file, this function will
+// attempt to read the {filePath}/jproj.json file.
 func LoadConfigurationFromFile(filePath string) (*Configuration, error) {
 	filePathStat, err := os.Stat(filePath)
 
@@ -201,6 +249,8 @@ func LoadConfigurationFromFile(filePath string) (*Configuration, error) {
 	return LoadConfigurationFromString(string(fileContent))
 }
 
+// Returns a list of the .jar files inside of the .ProjectLib directory of
+// the project.
 func (c Configuration) ListJarInLib(filePath string) ([]string, error) {
     return utils.GrepFilesByExtension(path.Join(filePath, c.ProjectLib), "jar", utils.GrepFiles)
 }

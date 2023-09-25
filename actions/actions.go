@@ -10,6 +10,7 @@ import (
     "github.com/folgue02/jproj/actions/listproject"
     "github.com/folgue02/jproj/actions/run"
     newElement "github.com/folgue02/jproj/actions/newElement"
+    "github.com/folgue02/jproj/actions/validate"
 )
 
 type Action struct {
@@ -32,6 +33,7 @@ func InitializeCommands() {
         "deps": { deps.ManageDependenciesActionHandler, "Manage dependencies." },
         "jar": { jar.CreateJarActionHandler, "Creates a jar based on the project specified." },
         "version": { versionAction, "Displays jproj's version." },
+        "validate": { validate.ValidateActionHandler, "Validates the environment." },
     }
 }
 
