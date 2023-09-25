@@ -7,7 +7,7 @@ import (
     "github.com/folgue02/jproj/version"
 )
 
-func versionAction(args []string) error {
+func VersionAction(args []string) error {
     fmt.Printf("JProj Current version: %s\n", version.GetJprojVersion().String())
     fmt.Printf("Running on %s_%s\n", runtime.GOOS, runtime.GOARCH)
     return nil
