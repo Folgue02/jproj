@@ -23,7 +23,10 @@ type ActionCollection map[string]Action
 
 // If there is an action with the name specified in the arguments, it will be executed,
 // returning whatever gets returned from the action's handler with a 'true' value. 
-// If there is no function with such name, 'nil, false' will be returned.
+// If there is no function with such name, 'nil, false' will be returned. 
+//
+// NOTE: This method calls the action with all the args specified, even the action's
+// name.
 //
 // NOTE: If the actionName is 'help' or 'listActions', then a table of the actions 
 // and their helpMsgs will be printed, and 'nil, true' gets returned.

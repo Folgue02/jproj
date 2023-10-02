@@ -3,94 +3,42 @@ package deps
 import (
 	"fmt"
 
-	"github.com/akamensky/argparse"
-	"github.com/folgue02/jproj/configuration"
+	"github.com/folgue02/jproj/utils/actionmanager"
 )
 
+func DepMgrActionHandler(args []string) error {
+    var actionName string
+    var actionArgs []string
+    if len(args) == 1 {
+        return fmt.Errorf("No action specified.")
+    } else if len(args) == 2 {
+        actionName = args[1]
+        actionArgs = args[1:] 
+    } else {
+        actionName = args[1]
+        actionArgs = args[1:]
+    }
 
+    depActions := actionmanager.ActionCollection {
+        "add": { 
+            ActionHandler: AddActionHandler, 
+            HelpMsg: "Adds a new dependency to the configuration",
+        },
+        "clean": { 
+            ActionHandler: CleanActionHandler, 
+            HelpMsg: "Removes the jar dependencies stored in the project's lib.",
+        },
+        "fetch": { 
+            ActionHandler: FetchActionHandler, 
+            HelpMsg: "Fetches the dependencies specified in the project's configuration." ,
+        },
+    }
 
+    err, ok := depActions.ExecuteAction(actionName, actionArgs)
 
+    if !ok {
+        return fmt.Errorf("No dependency management action found with name '%s'.", actionName)
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-type ManageDependenciesConfiguration struct {
-    ActionName string
-    Directory string
-    DependencyList []string
-}
-
-func NewManageDependenciesConfiguration(args []string) (*ManageDependenciesConfiguration, error) {
-	parser := argparse.NewParser("deps", "Manages dependencies")
-	action := parser.String(
-		"a",
-		"action",
-		&argparse.Options{Required: false, Default: "fetch", Help: "Action to be done on the dependencies.(fetch, clean, add)"})
-	projectDirectory := parser.String(
-		"d",
-		"directory",
-		&argparse.Options{Required: false, Default: ".", Help: "Directory where the project is located."},
-	)
-
-	dependencyList := parser.StringList(
-		"e",
-		"dependency-list",
-		&argparse.Options{Required: false, Default: []string{}, Help: "List of dependencies."},
-	)
-	if err := parser.Parse(args); err != nil {
-		return nil, err
-	}
-
-    return &ManageDependenciesConfiguration {
-        ActionName: *action,
-        Directory: *projectDirectory,
-        DependencyList: *dependencyList,
-    }, nil
-}
-
-func ManageDependenciesActionHandler(args []string) error {
-    depConfig, err := NewManageDependenciesConfiguration(args)
-
-	if err != nil {
-		return fmt.Errorf("Wrong arguments: %v", err)
-	}
-
-    return ManageDependenciesAction(*depConfig)
-}
-
-func ManageDependenciesAction(depConfig ManageDependenciesConfiguration) error {
-
-	projectConfiguration, err := configuration.LoadConfigurationFromFile(depConfig.Directory)
-
-	if err != nil {
-		return fmt.Errorf("Cannot load configuration due to the following error: %v", err)
-	}
-
-	switch depConfig.ActionName {
-	case "fetch":
-		if err := Fetch(depConfig.Directory, *projectConfiguration); err != nil {
-			return err
-		}
-	case "clean":
-		return CleanDependencies(depConfig.Directory, projectConfiguration)
-	case "add":
-		return AddDependency(depConfig.Directory, projectConfiguration, depConfig.DependencyList)
-	default:
-		return fmt.Errorf("Action not found: '%s'", depConfig.ActionName)
-	}
-
-	return nil
+    return err
 }

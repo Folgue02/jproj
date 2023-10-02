@@ -55,12 +55,12 @@ func CleanAction(cleanConfig CleanConfiguration) error {
 
     targetPath := path.Join(cleanConfig.Directory, projectConfig.ProjectTarget)
     
-    err = utils.CleanDirectory(targetPath)
+    err = utils.CleanAllDirectory(targetPath)
 
     if cleanConfig.BinCleaning {
         binPath := path.Join(cleanConfig.Directory, projectConfig.ProjectBin)
 
-        err = utils.CleanDirectory(binPath)
+        err = utils.CleanAllDirectory(binPath)
 
         if err != nil {
             return fmt.Errorf("Error: Cannot clean the bin directory due to the following error: %v\n", err)

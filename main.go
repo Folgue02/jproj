@@ -25,7 +25,7 @@ func main() {
         "clean": { clean.CleanActionHandler, "Cleans/Removes the compiled sources of the project." },
         "new": { newElement.NewElementActionHandler, "Adds/Creates a new element to the project." },
         "run": { run.RunProjectActionHandler, "Runs the current project." },
-        "deps": { deps.ManageDependenciesActionHandler, "Manage dependencies." },
+        "deps": { deps.DepMgrActionHandler, "Manage dependencies." },
         "jar": { jar.CreateJarActionHandler, "Creates a jar based on the project specified." },
         "version": { actions.VersionAction, "Displays jproj's version." },
         "validate": { validate.ValidateActionHandler, "Validates the environment." },
