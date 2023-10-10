@@ -42,5 +42,6 @@ func main() {
 		os.Exit(1)
 	} else if err != nil {
         log.Printf("Error while executing action with name %s: %v\n", os.Args[1], err)
+        os.Exit(2)
     }
 }

@@ -14,8 +14,9 @@ type Version struct {
     Patch int 
 }
 
+// Returns the current version of jproj.
 func GetJprojVersion() Version {
-    return Version { 0, 1, 3 }
+    return Version { 0, 1, 4 }
 }
 
 // Parses the string passed and creates a Version object from it.

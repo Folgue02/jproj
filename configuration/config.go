@@ -7,22 +7,23 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"text/tabwriter"
 
 	"github.com/folgue02/jproj/utils"
 )
 
 type Configuration struct {
-	ProjectAuthor      string       `json:"author"`
-	ProjectDescription string       `json:"description"`
-	ProjectName        string       `json:"project_name"`
-	ProjectVersion     string       `json:"project_version"`
-	ProjectTarget      string       `json:"project_target_path"`
-	ProjectLib         string       `json:"project_lib_path"`
+    ProjectAuthor      string       `json:"author"`
+    ProjectDescription string       `json:"description"`
+    ProjectName        string       `json:"project_name"`
+    ProjectVersion     string       `json:"project_version"`
+    ProjectTarget      string       `json:"project_target_path"`
+    ProjectLib         string       `json:"project_lib_path"`
     ProjectBin         string       `json:"project_bin_path"`
     Manifest           JavaManifest `json:"manifest,omitempty"`
-	MainClassPath      string       `json:"main_class_path,omitempty"`
-	Dependencies       []Dependency `json:"dependencies"`
+    MainClassPath      string       `json:"main_class_path,omitempty"`
+    Dependencies       []Dependency `json:"dependencies"`
 }
 
 func NewConfiguration(projectName string) Configuration {
@@ -197,8 +198,20 @@ func LoadConfigurationFromString(rawString string) (*Configuration, error) {
 // Checks if the configuration of the project contains a main class or
 // not, if the .MainClassPath attribute is set to "", it would mean that 
 // the project is not meant to be executed.
-func (c *Configuration) IsExecutableProject() bool {
+func (c Configuration) IsExecutableProject() bool {
     return c.MainClassPath != ""
+}
+
+// Checks if the given name of the jar is associated with one
+// of the dependencies in the project's configuration.
+func (c Configuration) IsJarInDependencies(jarName string) bool {
+    jarName = filepath.Base(jarName)
+    for _, dep := range c.Dependencies {
+        if dep.GetJarName() == jarName {
+            return true
+        }
+    }
+    return false
 }
 
 func (c Configuration) String() string {

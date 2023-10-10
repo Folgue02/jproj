@@ -24,5 +24,12 @@ clean-test-newproj:
 test-build: test-newproj
 	./bin/jproj build -d './test_playground/newproject'
 
+test-list: test-build
+	touch './test_playground/newproject/lib/file.jar'
+	@echo 'List listed dependencies'
+	bin/jproj deps list -d './test_playground/newproject/'
+	@echo 'List local dependencies'
+	bin/jproj deps list -d './test_playground/newproject/' -l
+
 install: build
 	cp ./bin/jproj ~/.local/bin
