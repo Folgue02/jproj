@@ -16,7 +16,7 @@ type CreateProjectConfiguration struct {
 }
 
 func NewCreateProjectConfiguration(args []string) (*CreateProjectConfiguration, error) {
-    parser := argparse.NewParser("createproj", "Creates a new project")
+    parser := argparse.NewParser("createproject", "Creates a new project")
     projectName := parser.String("n", "name", &argparse.Options { Required: true, Help: "Name of the new project"})
     projectBaseDirectory := parser.String("b", "basedirectory", &argparse.Options { Required: false, Default: ".", Help: "Directory in where the new project should be created." })
 

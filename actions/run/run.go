@@ -14,6 +14,7 @@ import (
 type RunConfiguration struct {
 	MainClass string
 	Directory string
+    NoBuild   bool
 }
 
 func NewRunConfiguration(args []string) (*RunConfiguration, error) {
@@ -28,6 +29,11 @@ func NewRunConfiguration(args []string) (*RunConfiguration, error) {
 		"directory",
 		&argparse.Options{Required: false, Default: ".", Help: "Specifies the project's directory."})
 
+    noBuild := parser.Flag(
+        "n",
+        "no-build",
+        &argparse.Options { Required: false, Default: false, Help: "Do not build the project before running it (run the previous compilation of it)." })
+
 	if err := parser.Parse(args); err != nil {
 		return nil, err
 	}
@@ -35,6 +41,7 @@ func NewRunConfiguration(args []string) (*RunConfiguration, error) {
 	return &RunConfiguration{
 		MainClass: *projectMainClass,
 		Directory: *projectDirectory,
+        NoBuild:   *noBuild,
 	}, nil
 }
 
@@ -49,15 +56,17 @@ func RunProjectActionHandler(args []string) error {
 }
 
 func RunProjectAction(runConfig RunConfiguration) error {
-	// Running the project requires building it first
-    if err := build.BuildAction(build.BuildProjectConfiguration { Directory: runConfig.Directory }); err != nil {
-		return fmt.Errorf("Error: Cannot build the project: %v", err)
-	}
+	// Running the project requires building it first (if '--no-build' hasn't been specified)
+    if !runConfig.NoBuild { 
+        if err := build.BuildAction(build.BuildProjectConfiguration { Directory: runConfig.Directory }); err != nil {
+            return fmt.Errorf("Cannot build the project: %v", err)
+        }
+    }
 
 	projectConfiguration, err := configuration.LoadConfigurationFromFile(runConfig.Directory)
 
 	if err != nil {
-		return fmt.Errorf("Error: Cannot load configuration due to the following error: %v", err)
+		return fmt.Errorf("Cannot load configuration due to the following error: %v", err)
 	}
 
     if !projectConfiguration.IsExecutableProject() {
@@ -88,7 +97,9 @@ func RunProjectAction(runConfig RunConfiguration) error {
 		return nil
 	}
 }
-    //jarLibs, err := utils.GrepFilesByExtension(path.Join(buildConfig.Directory, projectConfiguration.ProjectLib), "jar", utils.GrepFiles)
+
+
+// Generates the required arguments for the 'java' binary with the purpose of running the project specified.
 func buildRunJavaArgs(runConfig RunConfiguration, projectConfig configuration.Configuration, mainClass string, jarLibs []string) []string {
     jarLibs = append(jarLibs, projectConfig.ProjectTarget)
     classPath := strings.Join(jarLibs, ":")

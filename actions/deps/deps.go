@@ -32,6 +32,10 @@ func DepMgrActionHandler(args []string) error {
             ActionHandler: FetchActionHandler, 
             HelpMsg: "Fetches the dependencies specified in the project's configuration." ,
         },
+        "list": {
+            ActionHandler: ListActionHandler,
+            HelpMsg: "Lists the project's dependencies.",
+        },
     }
 
     err, ok := depActions.ExecuteAction(actionName, actionArgs)

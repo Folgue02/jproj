@@ -13,6 +13,7 @@ import (
 type JarCommandConfiguration struct {
     Directory  string
     Static     bool
+    NoBuild    bool
     OutputPath string
 }
 
@@ -35,12 +36,18 @@ func NewJarCommandConfiguration(args []string) (*JarCommandConfiguration, error)
         "output",
         &argparse.Options { Required: false, Default: "", Help: "Specify the place to output the jar to." })
 
+    noBuild := parser.Flag(
+        "n",
+        "no-build",
+        &argparse.Options { Required: false, Default: false, Help: "Do not build the project before creating the jar (use the previously compiled classes of the project)." })
+
     if err := parser.Parse(args); err != nil {
         return nil, err
     }
 
     return &JarCommandConfiguration {
         Directory:  *projectDirectory,
+        NoBuild:    *noBuild,
         Static:     *staticLinking,
         OutputPath: *outputPath,
     }, nil
@@ -63,11 +70,12 @@ func CreateJarAction(jarConfig JarCommandConfiguration) error {
         return err
     }
 
-    if err = build.BuildAction(build.BuildProjectConfiguration { Directory: jarConfig.Directory });
-        err != nil {
-            return fmt.Errorf("Error while compiling sources pre-jar: %v", err)
+    if !jarConfig.NoBuild {
+        if err = build.BuildAction(build.BuildProjectConfiguration { Directory: jarConfig.Directory });
+            err != nil {
+                return fmt.Errorf("Error while compiling sources pre-jar: %v", err)
+        }
     }
-
 
     // Save manifest
     err = projectConfig.Manifest.WriteToFile(path.Join(jarConfig.Directory, projectConfig.ProjectTarget, "MANIFEST.mf"))
@@ -87,6 +95,7 @@ func CreateJarAction(jarConfig JarCommandConfiguration) error {
     return nil
 }
 
+// Generates the flags for the 'javac' compiler required for compiling the current project.
 func buildJarCommand(jarConfig JarCommandConfiguration, projectConfig configuration.Configuration) []string {
     args := []string { "--create", "--file" }
     
@@ -104,6 +113,7 @@ func buildJarCommand(jarConfig JarCommandConfiguration, projectConfig configurat
     args = append(args, "-C", path.Join(jarConfig.Directory, projectConfig.ProjectTarget), ".")
 
     if jarConfig.Static {
+        // TODO: 
         args = append(args, "-C", path.Join(jarConfig.Directory, projectConfig.ProjectLib), ".")
     }
     return args 
