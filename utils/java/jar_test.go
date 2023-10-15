@@ -7,22 +7,21 @@ import (
 	"github.com/folgue02/jproj/utils/java"
 )
 
-func TestArgs(t *testing.T) {
+func TestJarArguments(t *testing.T) {
 	expected := []string{
-		"-cp", "./target/:./lib/file.jar",
+		"--create", "--file", "file.jar",
+		"--main-class", "me.user.app.App",
+		"-C", "./src", ".", "-C", "./lib", "file.jar",
+	}
+
+	jarCommand := java.NewJarCommand(
+		"jar",
+		"file.jar",
+		[][]string{{"./src"}, {"./lib", "file.jar"}},
 		"me.user.app.App",
-		"--my-flag", "--another-flag",
-	}
+	)
 
-	javaCommand := java.JavaCommand{
-		JavaPath:      "java",
-		MainClass:     "me.user.app.App",
-		ClassPaths:    []string{"./target/", "./lib/file.jar"},
-		ExecArguments: []string{"--my-flag", "--another-flag"},
-	}
-
-	result := javaCommand.Arguments()
-
+	result := jarCommand.Arguments()
 	printBoth := func() string {
 		return fmt.Sprintf("Expected: %s, Result: %s", expected, result)
 	}

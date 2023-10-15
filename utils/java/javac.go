@@ -1,11 +1,13 @@
 package java
 
 import (
-	"strings"
+    "strings"
 
     "github.com/folgue02/jproj/utils"
 )
 
+// Represents the configuration required for
+// executing the command 'javac'
 type JavacCommand struct {
     // Path/Command to the compiler
     CompilerPath string
@@ -21,21 +23,21 @@ type JavacCommand struct {
 }
 
 func NewJavacCommand(cc string, sources []string, classPaths []string, targetDir string) JavacCommand {
-    return JavacCommand {
+    return JavacCommand{
         CompilerPath: cc,
-        Sources: sources,
-        ClassPaths: classPaths,
-        TargetDir: targetDir,
+        Sources:      sources,
+        ClassPaths:   classPaths,
+        TargetDir:    targetDir,
     }
 }
 
-// Returns an array of string
+// Returns the arguments for the 'javac' command
 func (j JavacCommand) Arguments() []string {
     cmd := make([]string, 0)
     cmd = append(cmd, j.Sources...)
 
     cmd = append(cmd, "-d", j.TargetDir)
-    
+
     if len(j.ClassPaths) > 0 {
         cmd = append(cmd,
             "-cp",

@@ -14,16 +14,16 @@ import (
 )
 
 type Configuration struct {
-    ProjectAuthor      string       `json:"author"`
-    ProjectDescription string       `json:"description"`
-    ProjectName        string       `json:"project_name"`
-    ProjectVersion     string       `json:"project_version"`
-    ProjectTarget      string       `json:"project_target_path"`
-    ProjectLib         string       `json:"project_lib_path"`
-    ProjectBin         string       `json:"project_bin_path"`
-    Manifest           JavaManifest `json:"manifest,omitempty"`
-    MainClassPath      string       `json:"main_class_path,omitempty"`
-    Dependencies       []Dependency `json:"dependencies"`
+	ProjectAuthor      string       `json:"author"`
+	ProjectDescription string       `json:"description"`
+	ProjectName        string       `json:"project_name"`
+	ProjectVersion     string       `json:"project_version"`
+	ProjectTarget      string       `json:"project_target_path"`
+	ProjectLib         string       `json:"project_lib_path"`
+	ProjectBin         string       `json:"project_bin_path"`
+	Manifest           JavaManifest `json:"manifest,omitempty"`
+	MainClassPath      string       `json:"main_class_path,omitempty"`
+	Dependencies       []Dependency `json:"dependencies"`
 }
 
 func NewConfiguration(projectName string) Configuration {
@@ -34,7 +34,7 @@ func NewConfiguration(projectName string) Configuration {
 		ProjectVersion:     "1.0",
 		ProjectTarget:      "./target/classes",
 		ProjectLib:         "./lib",
-        ProjectBin:         "./target/bin",
+		ProjectBin:         "./target/bin",
 		MainClassPath:      "App",
 		Dependencies:       []Dependency{},
 	}
@@ -71,41 +71,41 @@ func (c Configuration) CreateProject(baseDirectory string) error {
 
 // Checks the integrity of the project, checking the existence of directories.
 // If anything is wrong with the project, this method will return an error with
-// a string containing each problem. NOTE: This method doesn't check if the 
+// a string containing each problem. NOTE: This method doesn't check if the
 // configuration file exists.
 func (c *Configuration) Validate(location string) error {
-    paths := []string { 
-        c.ProjectBin,
-        c.ProjectLib,
-        "./src/",
-    }
+	paths := []string{
+		c.ProjectBin,
+		c.ProjectLib,
+		"./src/",
+	}
 
-    errors := []string {}
+	errors := []string{}
 
-    for _, p := range paths {
-        fullP := path.Join(location, p)
+	for _, p := range paths {
+		fullP := path.Join(location, p)
 
-        pathStat, err := os.Stat(fullP)
+		pathStat, err := os.Stat(fullP)
 
-        if err != nil {
-            errors = append(errors, fmt.Sprintf("Cannot stat project directory '%s': %s", fullP, err))
-        }
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("Cannot stat project directory '%s': %s", fullP, err))
+		}
 
-        if !pathStat.IsDir() {
-            errors = append(errors, fmt.Sprintf("Path '%s' is not a directory", fullP))
-        }
-    }
+		if !pathStat.IsDir() {
+			errors = append(errors, fmt.Sprintf("Path '%s' is not a directory", fullP))
+		}
+	}
 
-    if len(errors) > 0 {
-        sBuilder := bytes.NewBufferString("Problems encountered: \n")
+	if len(errors) > 0 {
+		sBuilder := bytes.NewBufferString("Problems encountered: \n")
 
-        for i, e := range errors {
-            sBuilder.WriteString(fmt.Sprintf("[%d]: %s\n", i, e))
-        }
+		for i, e := range errors {
+			sBuilder.WriteString(fmt.Sprintf("[%d]: %s\n", i, e))
+		}
 
-        return fmt.Errorf("%s", sBuilder.String())
-    }
-    return nil
+		return fmt.Errorf("%s", sBuilder.String())
+	}
+	return nil
 }
 
 // Checks if there is a dependency with the same name as one
@@ -120,10 +120,15 @@ func (c *Configuration) DependencyExists(name string) bool {
 	return false
 }
 
+// Returns the name of what would be the output jar from the project.
+func (c Configuration) OutputJarName() string {
+	return fmt.Sprintf("%s-%s.jar", c.ProjectName, c.ProjectVersion)
+}
+
 // Saves the configuration to the path specified in the case that the
 // path specified points to a directory, "jproj.json" will be added at
 // the end.
-func (c *Configuration) SaveConfiguration(destPath string) error {
+func (c Configuration) SaveConfiguration(destPath string) error {
 	destStat, err := os.Stat(destPath)
 	if err != nil {
 		return fmt.Errorf("Cannot stat path: %v", err)
@@ -196,22 +201,22 @@ func LoadConfigurationFromString(rawString string) (*Configuration, error) {
 }
 
 // Checks if the configuration of the project contains a main class or
-// not, if the .MainClassPath attribute is set to "", it would mean that 
+// not, if the .MainClassPath attribute is set to "", it would mean that
 // the project is not meant to be executed.
 func (c Configuration) IsExecutableProject() bool {
-    return c.MainClassPath != ""
+	return c.MainClassPath != ""
 }
 
 // Checks if the given name of the jar is associated with one
 // of the dependencies in the project's configuration.
 func (c Configuration) IsJarInDependencies(jarName string) bool {
-    jarName = filepath.Base(jarName)
-    for _, dep := range c.Dependencies {
-        if dep.GetJarName() == jarName {
-            return true
-        }
-    }
-    return false
+	jarName = filepath.Base(jarName)
+	for _, dep := range c.Dependencies {
+		if dep.GetJarName() == jarName {
+			return true
+		}
+	}
+	return false
 }
 
 func (c Configuration) String() string {
@@ -223,10 +228,10 @@ func (c Configuration) String() string {
 	fmt.Fprintf(tw, "Version\t%s\n", c.ProjectVersion)
 	fmt.Fprintf(tw, "Target directory\t%s\n", c.ProjectTarget)
 	fmt.Fprintf(tw, "Lib directory\t%s\n", c.ProjectLib)
-    fmt.Fprintf(tw, "Bin directory\t%s\n", c.ProjectBin)
-    if c.MainClassPath != "" {
-        fmt.Fprintf(tw, "Main class\t%s\n", c.MainClassPath)
-    }
+	fmt.Fprintf(tw, "Bin directory\t%s\n", c.ProjectBin)
+	if c.MainClassPath != "" {
+		fmt.Fprintf(tw, "Main class\t%s\n", c.MainClassPath)
+	}
 
 	if len(c.Dependencies) > 0 {
 		fmt.Fprintf(tw, "Dependencies\t%s\n", c.Dependencies[0])
@@ -265,5 +270,5 @@ func LoadConfigurationFromFile(filePath string) (*Configuration, error) {
 // Returns a list of the .jar files inside of the .ProjectLib directory of
 // the project.
 func (c Configuration) ListJarInLib(filePath string) ([]string, error) {
-    return utils.GrepFilesByExtension(path.Join(filePath, c.ProjectLib), "jar", utils.GrepFiles)
+	return utils.GrepFilesByExtension(path.Join(filePath, c.ProjectLib), "jar", utils.GrepFiles)
 }
