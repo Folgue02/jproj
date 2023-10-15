@@ -14,6 +14,7 @@ import (
 	newElement "github.com/folgue02/jproj/actions/newElement"
 	"github.com/folgue02/jproj/actions/run"
 	"github.com/folgue02/jproj/actions/validate"
+	"github.com/folgue02/jproj/utils"
 	"github.com/folgue02/jproj/utils/actionmanager"
 )
 
@@ -41,7 +42,8 @@ func main() {
 		log.Printf("No action with name '%s' found.\n", os.Args[1])
 		os.Exit(1)
 	} else if err != nil {
-        log.Printf("Error while executing action with name %s: %v\n", os.Args[1], err)
+        log.Printf("Error while executing action with name %s: \n", os.Args[1])
+        utils.BeautifyError(err, func (section string) { log.Printf(section) })
         os.Exit(2)
     }
 }

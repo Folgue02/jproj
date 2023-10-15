@@ -9,6 +9,7 @@ test:
 	go test ./configuration
 	go test ./actions/jar
 	go test ./templates
+	go test ./utils/java
 
 clean:
 	rm -rf './bin'

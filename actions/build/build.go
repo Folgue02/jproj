@@ -3,14 +3,13 @@ package build
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
 	"path"
-	"strings"
+	"path/filepath"
 
 	"github.com/akamensky/argparse"
 	"github.com/folgue02/jproj/configuration"
 	"github.com/folgue02/jproj/utils"
+	"github.com/folgue02/jproj/utils/java"
 )
 
 type BuildProjectConfiguration struct {
@@ -66,7 +65,13 @@ func BuildAction(buildConfig BuildProjectConfiguration) error {
     }
 
     // Build
-    err = buildSources(buildConfig.Directory, javaFiles, jarLibs, *projectConfiguration)
+    javacCommand := java.NewJavacCommand(
+        "javac", // TODO: Change for an actual compiler path given by configuration
+        javaFiles,
+        jarLibs,
+        filepath.Join(buildConfig.Directory, projectConfiguration.ProjectTarget))
+
+    err = utils.CMD(javacCommand.CompilerPath, javacCommand.Arguments()...)
 
     if err != nil {
         return fmt.Errorf("Error: Error while compiling with 'javac': %v", err)
@@ -74,30 +79,4 @@ func BuildAction(buildConfig BuildProjectConfiguration) error {
         log.Println("Done.")
         return nil
     }
-}
-
-// Builds up the command, and builds the sources.
-// (NOTE: This method doesn't check the validity of none of 
-// the arguments passed.)
-func buildSources(projectDirectory string,
-    javaSources []string,
-    jarLibs []string,
-    projectConfiguration configuration.Configuration) error {
-    // Build the command
-    cliCommand := javaSources 
-    cliCommand = append(cliCommand, "-d")
-    cliCommand = append(cliCommand, path.Join(projectDirectory, projectConfiguration.ProjectTarget))
-
-    if len(jarLibs) > 0 {
-        cliCommand = append(cliCommand, "-cp", strings.Join(jarLibs, ":"))
-    }
-
-    log.Printf("Building project '%s'...\n", projectConfiguration.ProjectName)
-
-    log.Printf("Build command: --< %v >--\n", cliCommand)
-    command := exec.Command("javac", cliCommand...)
-    command.Stdout = os.Stdout
-    command.Stderr = os.Stderr
-    command.Stdin = os.Stdin
-    return command.Run()
 }

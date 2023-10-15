@@ -3,12 +3,12 @@ package run
 import (
 	"fmt"
 	"log"
-	"strings"
+	"path/filepath"
 
 	"github.com/akamensky/argparse"
-	"github.com/folgue02/jproj/actions/build"
 	"github.com/folgue02/jproj/configuration"
 	"github.com/folgue02/jproj/utils"
+	"github.com/folgue02/jproj/utils/java"
 )
 
 type RunConfiguration struct {
@@ -56,12 +56,6 @@ func RunProjectActionHandler(args []string) error {
 }
 
 func RunProjectAction(runConfig RunConfiguration) error {
-	// Running the project requires building it first (if '--no-build' hasn't been specified)
-    if !runConfig.NoBuild { 
-        if err := build.BuildAction(build.BuildProjectConfiguration { Directory: runConfig.Directory }); err != nil {
-            return fmt.Errorf("Cannot build the project: %v", err)
-        }
-    }
 
 	projectConfiguration, err := configuration.LoadConfigurationFromFile(runConfig.Directory)
 
@@ -86,9 +80,33 @@ func RunProjectAction(runConfig RunConfiguration) error {
     if err != nil {
         return fmt.Errorf("Couldn't list jars in the lib folder: %v", err)
     }
+
+    javaSources, err := utils.GrepFilesByExtension(filepath.Join(runConfig.Directory, "./src/"), "java", utils.GrepFiles)
+
+    if err != nil {
+        return fmt.Errorf("Cannot list sources in dir '%s': %v", filepath.Join(runConfig.Directory, "./src/"), err)
+    }
     
-    javaArgs := buildRunJavaArgs(runConfig, *projectConfiguration, mainClass, jarLibs)
-    err = utils.CMD("java", javaArgs...)
+	// Running the project requires building it first (if '--no-build' hasn't been specified)
+    if !runConfig.NoBuild { 
+        javac := java.NewJavacCommand(
+            "javac", // TODO: Change it for a configuration parameter
+            javaSources,
+            jarLibs,
+            filepath.Join(runConfig.Directory, projectConfiguration.ProjectTarget))
+        
+        if err := utils.CMD(javac.CompilerPath, javac.Arguments()...); err != nil {
+            return fmt.Errorf("Cannot build the project: %v", err)
+        }
+    }
+
+    javaCommand := java.NewJavaCommand(
+        "java", // TODO: Replace with something from a configuration
+        append(jarLibs, filepath.Join(runConfig.Directory, projectConfiguration.ProjectTarget)),
+        mainClass,
+        []string {})
+
+    err = utils.CMD(javaCommand.JavaPath, javaCommand.Arguments()...)
 
 	if err != nil {
 		return fmt.Errorf("Error: Error while running with 'java': %v", err)
@@ -97,14 +115,3 @@ func RunProjectAction(runConfig RunConfiguration) error {
 		return nil
 	}
 }
-
-
-// Generates the required arguments for the 'java' binary with the purpose of running the project specified.
-func buildRunJavaArgs(runConfig RunConfiguration, projectConfig configuration.Configuration, mainClass string, jarLibs []string) []string {
-    jarLibs = append(jarLibs, projectConfig.ProjectTarget)
-    classPath := strings.Join(jarLibs, ":")
-	javaArgs := []string{"-cp", classPath, mainClass}
-
-    return javaArgs
-}
-
