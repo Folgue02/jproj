@@ -63,8 +63,11 @@ func ValidateAction(vConfig ValidateConfiguration) error {
 
     if vConfig.ValidateProject {
         if err := validateProject(vConfig); err != nil {
+            log.Println("==> Invalid project, check the logs below to find out why.")
             return err
         }
+
+        log.Println("Project validated (valid).")
     }
 
     return  nil
@@ -89,6 +92,10 @@ func validateProject(vConfig ValidateConfiguration) error {
 
     if err != nil {
         return err 
+    }
+
+    if err = pConfig.ValidateIncluded(vConfig.Directory); err != nil {
+        return err
     }
     
     return nil

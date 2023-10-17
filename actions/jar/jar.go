@@ -79,6 +79,7 @@ func CreateJarAction(jarConfig JarCommandConfiguration) error {
         }
     }
 
+
     // Save manifest
     err = projectConfig.Manifest.WriteToFile(outputManifestPath)
 
@@ -94,6 +95,17 @@ func CreateJarAction(jarConfig JarCommandConfiguration) error {
 
     jarCommand.ManifestFile = outputManifestPath
 
+    if jarConfig.Static {
+        includedTargets, err := projectConfig.ListIncludedTargetPaths(jarConfig.Directory)
+
+        if err != nil {
+            return fmt.Errorf("Cannot list included target paths: %v", err)
+        }
+
+        for _, includedTarget := range includedTargets {
+            jarCommand.Sources = append(jarCommand.Sources, []string{ includedTarget })
+        }
+    }
     err = utils.CMD(jarCommand.JarPath, jarCommand.Arguments()...)
 
     if err != nil {

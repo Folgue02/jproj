@@ -16,7 +16,7 @@ type Version struct {
 
 // Returns the current version of jproj.
 func GetJprojVersion() Version {
-    return Version { 0, 1, 5 }
+    return Version { 0, 1, 6 }
 }
 
 // Parses the string passed and creates a Version object from it.

@@ -78,7 +78,8 @@ func CleanAllDirectory(dirPath string) error {
     return CleanDirectory(dirPath, func(s string) bool { return true })
 }
 
-// Checks if the directory specified contains a valid structure.
+// Checks if the directory specified contains a valid structure
+// for a project.
 // 
 // Checks performed:
 //

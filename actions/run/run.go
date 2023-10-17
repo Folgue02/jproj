@@ -75,11 +75,19 @@ func RunProjectAction(runConfig RunConfiguration) error {
 		mainClass = projectConfiguration.MainClassPath
 	}
 
-    jarLibs, err := projectConfiguration.ListJarInLib(runConfig.Directory)
+    classpaths, err := projectConfiguration.ListJarInLib(runConfig.Directory)
 
     if err != nil {
         return fmt.Errorf("Couldn't list jars in the lib folder: %v", err)
     }
+
+    includedTargets, err := projectConfiguration.ListIncludedTargetPaths(runConfig.Directory)
+
+    if err != nil {
+        return fmt.Errorf("Couldn't list included targets: %v", err)
+    }
+
+    classpaths = append(classpaths, includedTargets...)
 
     javaSources, err := utils.GrepFilesByExtension(filepath.Join(runConfig.Directory, "./src/"), "java", utils.GrepFiles)
 
@@ -92,7 +100,7 @@ func RunProjectAction(runConfig RunConfiguration) error {
         javac := java.NewJavacCommand(
             "javac", // TODO: Change it for a configuration parameter
             javaSources,
-            jarLibs,
+            classpaths,
             filepath.Join(runConfig.Directory, projectConfiguration.ProjectTarget))
         
         if err := utils.CMD(javac.CompilerPath, javac.Arguments()...); err != nil {
@@ -102,7 +110,7 @@ func RunProjectAction(runConfig RunConfiguration) error {
 
     javaCommand := java.NewJavaCommand(
         "java", // TODO: Replace with something from a configuration
-        append(jarLibs, filepath.Join(runConfig.Directory, projectConfiguration.ProjectTarget)),
+        append(classpaths, filepath.Join(runConfig.Directory, projectConfiguration.ProjectTarget)),
         mainClass,
         []string {})
 

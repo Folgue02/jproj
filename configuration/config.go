@@ -24,6 +24,7 @@ type Configuration struct {
 	Manifest           JavaManifest `json:"manifest,omitempty"`
 	MainClassPath      string       `json:"main_class_path,omitempty"`
 	Dependencies       []Dependency `json:"dependencies"`
+    IncludedProjects   []string     `json:"included_projects"`
 }
 
 func NewConfiguration(projectName string) Configuration {
@@ -37,6 +38,7 @@ func NewConfiguration(projectName string) Configuration {
 		ProjectBin:         "./target/bin",
 		MainClassPath:      "App",
 		Dependencies:       []Dependency{},
+        IncludedProjects:   []string{},
 	}
 }
 
@@ -73,39 +75,62 @@ func (c Configuration) CreateProject(baseDirectory string) error {
 // If anything is wrong with the project, this method will return an error with
 // a string containing each problem. NOTE: This method doesn't check if the
 // configuration file exists.
-func (c *Configuration) Validate(location string) error {
+func (c Configuration) Validate(location string) error {
 	paths := []string{
 		c.ProjectBin,
 		c.ProjectLib,
 		"./src/",
 	}
 
-	errors := []string{}
+	errors := utils.ErrorBundle {} 
 
+    // Check directories related to the current project
 	for _, p := range paths {
 		fullP := path.Join(location, p)
 
 		pathStat, err := os.Stat(fullP)
 
 		if err != nil {
-			errors = append(errors, fmt.Sprintf("Cannot stat project directory '%s': %s", fullP, err))
+			errors.Add(fmt.Errorf("Cannot stat project directory '%s': %s", fullP, err))
+            continue
 		}
 
 		if !pathStat.IsDir() {
-			errors = append(errors, fmt.Sprintf("Path '%s' is not a directory", fullP))
+            errors.Add(fmt.Errorf("Path '%s' is not a directory", fullP))
+            continue
 		}
 	}
 
-	if len(errors) > 0 {
-		sBuilder := bytes.NewBufferString("Problems encountered: \n")
-
-		for i, e := range errors {
-			sBuilder.WriteString(fmt.Sprintf("[%d]: %s\n", i, e))
-		}
-
-		return fmt.Errorf("%s", sBuilder.String())
+	if errors.Len() > 0 {
+        return errors
 	}
 	return nil
+}
+
+func (c Configuration) ValidateIncluded(location string) error {
+    errors := utils.ErrorBundle {}
+
+    for _, includedPath := range c.IncludedProjects {
+        includedPath = filepath.Join(location, includedPath)
+
+        includedConfig, err := LoadConfigurationFromFile(includedPath)
+
+        if err != nil {
+            errors.Add(fmt.Errorf("Cannot load project's ('%s') configuration: %v", includedPath, err))
+            continue
+        }
+
+        err = includedConfig.Validate(includedPath)
+
+        if err != nil {
+            errors.Add(fmt.Errorf("Errors found while validating included project '%s': %v", includedPath, err))
+        }
+    }
+
+    if errors.Len() == 0 {
+        return nil
+    }
+    return errors
 }
 
 // Checks if there is a dependency with the same name as one
@@ -271,4 +296,19 @@ func LoadConfigurationFromFile(filePath string) (*Configuration, error) {
 // the project.
 func (c Configuration) ListJarInLib(filePath string) ([]string, error) {
 	return utils.GrepFilesByExtension(path.Join(filePath, c.ProjectLib), "jar", utils.GrepFiles)
+}
+
+func (c Configuration) ListIncludedTargetPaths(configPath string) ([]string, error) {
+    paths := make([]string, 0)
+
+    for _, includedPath := range c.IncludedProjects {
+        includedConfig, err:= LoadConfigurationFromFile(filepath.Join(configPath, includedPath))
+        if err != nil {
+            return nil, fmt.Errorf("Cannot load configuration from included project '%s': %v", filepath.Join(configPath, includedPath), err)
+        }
+        includedPath = filepath.Join(configPath, includedPath, includedConfig.ProjectTarget)
+        paths = append(paths, includedPath)
+    }
+
+    return paths, nil
 }
